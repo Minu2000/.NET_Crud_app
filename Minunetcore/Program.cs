@@ -14,6 +14,7 @@ builder.Services.AddCors(options =>
 #region Configure Database  
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<DataDbContext>(options => options.UseSqlServer(connectionString));
 #endregion
 
 

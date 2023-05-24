@@ -1,18 +1,26 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Minunetcore.Data;
 using Minunetcore.Models;
 using System.Xml.Serialization;
 
 namespace Minunetcore.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class DatamodelController : ControllerBase
     {
+        private readonly DataDbContext _dbContext;  
+
+        public DatamodelController(DataDbContext dbContext) 
+        {
+            _dbContext = dbContext;
+        }
+
         [HttpGet]
         public ActionResult Get()
         {
-            List<Datamodel> data = GenerateData();
+            List<Datamodel> data = FetchDataFromDatabase();
 
             var serializer = new XmlSerializer(typeof(List<Datamodel>));
             var xmlString = "";
@@ -24,12 +32,38 @@ namespace Minunetcore.Controllers
             return Content(xmlString, "application/xml");
         }
 
-        private List<Datamodel> GenerateData()
-        {
-            var data = new List<Datamodel>();
+        
+        [HttpGet("{id}")]
+        public ActionResult GetById(int id) { 
+            var data = _dbContext.Mydata.Find(id);
+            if (data == null) { 
+                return NotFound();
+            }
+            var serializer =new XmlSerializer(typeof(Datamodel));
+            var xmlString = "";
+            using(var stringWriter = new StringWriter())
+            {
+                serializer.Serialize(stringWriter, data);
+                xmlString = stringWriter.ToString();
+            }
+            return Content(xmlString, "application/xml");
+        }
 
-            data.Add(new Datamodel(1, "mobile"));
-            data.Add(new Datamodel(2, "laptop"));
+
+        [HttpPost]
+        public ActionResult Post([FromBody] Datamodel newdata)
+        {
+            if(newdata == null)
+            {
+                return BadRequest();
+            }
+            _dbContext.Mydata.Add(newdata);
+            _dbContext.SaveChanges();
+            return Ok(newdata);
+        }
+        private List<Datamodel> FetchDataFromDatabase()
+        {
+            List<Datamodel> data =_dbContext.Mydata.ToList();
             return data;
         }
     }
