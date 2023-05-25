@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Minunetcore.Data;
 using Minunetcore.Models;
 using System.Xml.Serialization;
-
+using Minunetcore.Helpers;
 namespace Minunetcore.Controllers
 {
     [Route("api/v1/[controller]")]
@@ -22,13 +22,7 @@ namespace Minunetcore.Controllers
         {
             List<Datamodel> data = FetchDataFromDatabase();
 
-            var serializer = new XmlSerializer(typeof(List<Datamodel>));
-            var xmlString = "";
-            using (var stringWriter = new StringWriter())
-            {
-                serializer.Serialize(stringWriter, data);
-                xmlString = stringWriter.ToString();
-            }
+            var xmlString = XmlSerializationHelper.SerializeToXml(data);
             return Content(xmlString, "application/xml");
         }
 
@@ -39,13 +33,7 @@ namespace Minunetcore.Controllers
             if (data == null) { 
                 return NotFound();
             }
-            var serializer =new XmlSerializer(typeof(Datamodel));
-            var xmlString = "";
-            using(var stringWriter = new StringWriter())
-            {
-                serializer.Serialize(stringWriter, data);
-                xmlString = stringWriter.ToString();
-            }
+            var xmlString = XmlSerializationHelper.SerializeToXml(data);
             return Content(xmlString, "application/xml");
         }
 
